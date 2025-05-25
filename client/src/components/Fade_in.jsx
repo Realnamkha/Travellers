@@ -1,59 +1,44 @@
-// components/FadeInSection.jsx
-import React, { useRef, useState, useEffect } from "react";
+"use client";
+
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+
+const directionVariants = {
+  up: { initial: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } },
+  down: { initial: { opacity: 0, y: -30 }, visible: { opacity: 1, y: 0 } },
+  left: { initial: { opacity: 0, x: 30 }, visible: { opacity: 1, x: 0 } },
+  right: { initial: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } },
+};
 
 const FadeInSection = ({
   children,
-  direction = "up", // can be 'up', 'down', 'left', 'right'
-  delay = 0, // delay in milliseconds
+  direction = "up",
+  delay = 0,
+  duration = 0.8,
+  repeat = false,
 }) => {
-  const ref = useRef();
-  const [isVisible, setVisible] = useState(false);
+  const ref = useRef(null);
+  const isInView = useInView(ref, {
+    triggerOnce: !repeat,
+    amount: 0.2,
+  });
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setVisible(true);
-      },
-      { threshold: 0.1 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => {
-      if (ref.current) observer.unobserve(ref.current);
-    };
-  }, []);
-
-  const getDirectionClass = () => {
-    switch (direction) {
-      case "up":
-        return "translate-y-8";
-      case "down":
-        return "-translate-y-8";
-      case "left":
-        return "translate-x-8";
-      case "right":
-        return "-translate-x-8";
-      default:
-        return "translate-y-8";
-    }
-  };
+  const { initial, visible } =
+    directionVariants[direction] || directionVariants.up;
 
   return (
-    <div
+    <motion.div
       ref={ref}
-      style={{
-        transitionDelay: `${delay}ms`,
+      initial={initial}
+      animate={isInView ? visible : initial}
+      transition={{
+        duration,
+        delay: delay / 1000, // convert ms to seconds
+        ease: "easeOut",
       }}
-      className={`transition-all duration-1000 ease-in-out transform
-        ${
-          isVisible
-            ? "opacity-100 translate-x-0 translate-y-0 scale-100"
-            : `opacity-0 ${getDirectionClass()} scale-95`
-        }
-      `}
     >
       {children}
-    </div>
+    </motion.div>
   );
 };
 
