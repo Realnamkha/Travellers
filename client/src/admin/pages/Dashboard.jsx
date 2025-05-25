@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function AdminDashboard() {
+const RoomManagement = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,13 +14,13 @@ function AdminDashboard() {
   });
   const [editingRoomId, setEditingRoomId] = useState(null);
 
-  // Fetch rooms from backend
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/rooms");
+      const res = await axios.get("http://localhost:8000/api/v1/rooms");
       setRooms(res.data.data);
-    } catch (e) {
+      setError(null);
+    } catch {
       setError("Failed to fetch rooms");
     } finally {
       setLoading(false);
@@ -31,7 +31,6 @@ function AdminDashboard() {
     fetchRooms();
   }, []);
 
-  // Handle input changes for the form
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -40,18 +39,20 @@ function AdminDashboard() {
     }));
   };
 
-  // Handle add or update room
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       setLoading(true);
       if (editingRoomId) {
-        // Update room
-        await axios.put(`/api/rooms/${editingRoomId}`, form);
+        await axios.put(
+          `http://localhost:8000/api/v1/rooms/update-room/${editingRoomId}`,
+          form
+        );
       } else {
-        // Create room
-        await axios.post("/api/rooms", form);
+        await axios.post(
+          "http://localhost:8000/api/v1/rooms/create-room",
+          form
+        );
       }
       setForm({
         name: "",
@@ -62,14 +63,14 @@ function AdminDashboard() {
       });
       setEditingRoomId(null);
       fetchRooms();
-    } catch (e) {
+      setError(null);
+    } catch {
       setError("Failed to save room");
     } finally {
       setLoading(false);
     }
   };
 
-  // Edit room click
   const startEditing = (room) => {
     setForm({
       name: room.name,
@@ -81,131 +82,220 @@ function AdminDashboard() {
     setEditingRoomId(room._id);
   };
 
-  // Delete room
   const deleteRoom = async (id) => {
     try {
-      await axios.delete(`/api/rooms/${id}`);
+      await axios.delete(
+        `http://localhost:8000/api/v1/rooms/delete-room/${id}`
+      );
       fetchRooms();
+      setError(null);
     } catch {
       setError("Failed to delete room");
     }
   };
 
-  // Toggle availability
-  const toggleAvailability = async (id) => {
-    try {
-      await axios.patch(`/api/rooms/toggle-availability/${id}`);
-      fetchRooms();
-    } catch {
-      setError("Failed to toggle availability");
-    }
-  };
-
   return (
-    <div>
-      <h1>Admin Room Management</h1>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">Room Management</h1>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && (
+        <p className="text-red-600 font-semibold mb-4 text-center">{error}</p>
+      )}
 
-      {/* Room form */}
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleInputChange}
-          placeholder="Room Name"
-          required
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleInputChange}
-          placeholder="Description"
-        />
-        <input
-          name="price"
-          type="number"
-          value={form.price}
-          onChange={handleInputChange}
-          placeholder="Price"
-          required
-        />
-        <select
-          name="roomType"
-          value={form.roomType}
-          onChange={handleInputChange}
-        >
-          <option value="Single">Single</option>
-          <option value="Double">Double</option>
-        </select>
-        <label>
-          <input
-            name="attachedToilet"
-            type="checkbox"
-            checked={form.attachedToilet}
-            onChange={handleInputChange}
-          />
-          Attached Toilet
-        </label>
-        <button type="submit" disabled={loading}>
-          {editingRoomId ? "Update Room" : "Add Room"}
-        </button>
-        {editingRoomId && (
-          <button
-            type="button"
-            onClick={() => {
-              setForm({
-                name: "",
-                description: "",
-                price: "",
-                roomType: "Single",
-                attachedToilet: false,
-              });
-              setEditingRoomId(null);
-            }}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-10"
+      >
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 font-semibold mb-2"
+            htmlFor="name"
           >
-            Cancel
+            Room Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleInputChange}
+            placeholder="Room Name"
+            required
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 font-semibold mb-2"
+            htmlFor="description"
+          >
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={form.description}
+            onChange={handleInputChange}
+            placeholder="Description"
+            rows={3}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 font-semibold mb-2"
+            htmlFor="price"
+          >
+            Price
+          </label>
+          <input
+            id="price"
+            type="number"
+            name="price"
+            value={form.price}
+            onChange={handleInputChange}
+            placeholder="Price"
+            required
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 font-semibold mb-2"
+            htmlFor="roomType"
+          >
+            Room Type
+          </label>
+          <select
+            id="roomType"
+            name="roomType"
+            value={form.roomType}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-indigo-300"
+          >
+            <option value="Single">Single</option>
+            <option value="Double">Double</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              name="attachedToilet"
+              checked={form.attachedToilet}
+              onChange={handleInputChange}
+              className="form-checkbox h-5 w-5 text-indigo-600"
+            />
+            <span className="ml-2 text-gray-700 font-semibold">
+              Attached Toilet
+            </span>
+          </label>
+        </div>
+
+        <div className="flex items-center">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+          >
+            {editingRoomId ? "Update Room" : "Add Room"}
           </button>
-        )}
+
+          {editingRoomId && (
+            <button
+              type="button"
+              onClick={() => {
+                setForm({
+                  name: "",
+                  description: "",
+                  price: "",
+                  roomType: "Single",
+                  attachedToilet: false,
+                });
+                setEditingRoomId(null);
+              }}
+              className="ml-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
-      {/* Rooms list */}
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-center text-gray-500">Loading rooms...</p>
       ) : (
-        <table border="1" cellPadding="10" cellSpacing="0">
+        <table className="table-auto w-full border-collapse border border-gray-300">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Type</th>
-              <th>Attached Toilet</th>
-              <th>Available</th>
-              <th>Actions</th>
+            <tr className="bg-indigo-100">
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Name
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Price
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Type
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Attached Toilet
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {rooms.map((room) => (
-              <tr key={room._id}>
-                <td>{room.name}</td>
-                <td>{room.price}</td>
-                <td>{room.roomType}</td>
-                <td>{room.attachedToilet ? "Yes" : "No"}</td>
-                <td>{room.isAvailable ? "Yes" : "No"}</td>
-                <td>
-                  <button onClick={() => startEditing(room)}>Edit</button>
-                  <button onClick={() => deleteRoom(room._id)}>Delete</button>
-                  <button onClick={() => toggleAvailability(room._id)}>
-                    Toggle Availability
-                  </button>
+            {rooms.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="border border-gray-300 px-4 py-2 text-center text-gray-500"
+                >
+                  No rooms found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              rooms.map((room) => (
+                <tr key={room._id} className="hover:bg-gray-100">
+                  <td className="border border-gray-300 px-4 py-2">
+                    {room.name}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {room.price}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {room.roomType}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {room.attachedToilet ? "Yes" : "No"}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 space-x-2">
+                    <button
+                      onClick={() => startEditing(room)}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-1 px-3 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteRoom(room._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       )}
     </div>
   );
-}
+};
 
-export default AdminDashboard;
+export default RoomManagement;

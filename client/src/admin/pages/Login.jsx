@@ -3,6 +3,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
   Form,
@@ -48,6 +49,8 @@ const Login = () => {
       // Save tokens
       localStorage.setItem("token", token);
       localStorage.setItem("refreshToken", refreshToken);
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Navigate based on role
       if (user.isAdmin) {

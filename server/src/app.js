@@ -23,10 +23,12 @@ import userRouter from "./routes/user.routes.js";
 import roomRouter from "./routes/room.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
+import contactRoutes from "./routes/contact.routes.js";
 
 //routes
 app.use("/api/v1/healthcheck", heathcheckrouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/users", contactRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/rooms", roomRouter);
 app.use("/api/v1/bookings", bookingRoutes);

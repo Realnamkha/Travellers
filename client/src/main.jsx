@@ -17,8 +17,13 @@ import Home from "./pages/Home.jsx";
 import Facilities from "./pages/Facilities.jsx";
 import Contact from "./pages/Contact.jsx";
 import Gallery from "./pages/Gallery.jsx";
-import AdminDashboard from "./admin/pages/Dashboard.jsx";
+import RoomManagement from "./admin/pages/Dashboard.jsx";
+import axios from "axios";
 
+const token = localStorage.getItem("token");
+if (token) {
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
 // 👇 Create router
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,7 +36,7 @@ const router = createBrowserRouter(
       </Route>
       // Admin routes/
       <Route path="/login" element={<Login />} />
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/dashboard" element={<RoomManagement />} />
     </>
   )
 );

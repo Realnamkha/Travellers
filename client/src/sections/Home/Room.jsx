@@ -1,23 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Room = () => {
-  const rooms = [
-    {
-      img: "./room1.jpg",
-      title: "Deluxe Room",
-      description: "A cozy room with mountain views.",
-    },
-    {
-      img: "./room2.jpg",
-      title: "Superior Room",
-      description: "Spacious room with city views.",
-    },
-    {
-      img: "./room3.jpg",
-      title: "Suite",
-      description: "Luxurious suite with private balcony.",
-    },
-  ];
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await axios.get("http://localhost:8000/api/v1/rooms");
+        setRooms(res.data.data);
+      } catch (error) {
+        console.error("Failed to fetch rooms", error);
+      }
+    };
+    fetchRooms();
+  }, []);
 
   return (
     <div className="bg-gray-200 min-h-screen px-4 py-12">
@@ -30,12 +27,12 @@ const Room = () => {
             className="relative rounded shadow text-center overflow-hidden cursor-pointer"
           >
             <img
-              src={room.img}
-              alt={room.title}
+              src={"./hotel.jpeg"} // make sure your API includes image URL
+              alt={room.name}
               className="w-full h-96 md:h-[30rem] object-cover rounded-lg shadow-md transform transition-transform duration-300 hover:scale-105"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-30 backdrop-blur-md text-black p-3 rounded-b-lg text-left">
-              <h2 className="text-xl font-semibold">{room.title}</h2>
+              <h2 className="text-xl font-semibold">{room.name}</h2>
               <p className="text-sm">{room.description}</p>
             </div>
           </div>
